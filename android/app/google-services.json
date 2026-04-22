@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "246014624491",
+    "project_id": "gin-firebase-backend-12925",
+    "storage_bucket": "gin-firebase-backend-12925.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246014624491:android:c674e3626638c64cd4b4ae",
+        "android_client_info": {
+          "package_name": "com.example.service_store"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA45TlouZf1jo74U7eh-PFasRvVtPbNGk8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
