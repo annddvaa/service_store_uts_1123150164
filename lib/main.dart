@@ -5,6 +5,7 @@ import 'core/routes/app_router.dart';
 import 'core/services/secure_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/cart/presentation/providers/cart_provider.dart';
 import 'features/dashboard/presentation/providers/product_provider.dart';
 import 'firebase_options.dart';
 
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(
         title: 'My App',
@@ -29,7 +31,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// SplashPage: cek token tersimpan, redirect otomatis
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
   @override
@@ -44,7 +45,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2)); // Animasi splash
+    await Future.delayed(const Duration(seconds: 2)); 
     if (!mounted) return;
 
     final token = await SecureStorageService.getToken();
