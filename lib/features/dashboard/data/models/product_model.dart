@@ -15,14 +15,23 @@ class ProductModel extends Equatable {
     required this.category,
   });
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
-    id: json['id'] as int,
-    name: json['name'] as String,
-    price: (json['price'] as num).toDouble(),
-    imageUrl: json['image_url'] as String,
-    category: json['category'] as String,
-  );
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
+    return ProductModel(
+      // 1. GORM secara default menggunakan ID (Huruf Kapital)
+      id: json['ID'] as int? ?? 0, 
+      
+      // 2. Gunakan nilai default jika data null dari backend
+      name: json['name'] as String? ?? 'Tanpa Nama',
+      
+      // 3. Konversi price ke double dengan aman
+      price: (json['price'] as num? ?? 0).toDouble(),
+      
+      // 4. Samakan key dengan log: image_url dan category
+      imageUrl: json['image_url'] as String? ?? '',
+      category: json['category'] as String? ?? 'Umum',
+    );
+  }
 
   @override
-  List<Object?> get props => [id, name, price];
+  List<Object?> get props => [id, name, price, imageUrl, category];
 }
