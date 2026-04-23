@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../cart/presentation/providers/cart_provider.dart';
 import '../providers/product_provider.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
   @override
   State<DashboardPage> createState() => _DashboardPageState();
 }
@@ -14,9 +16,10 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    // Fetch produk begitu halaman dibuka
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().fetchProducts();
+      context.read<CartProvider>().fetchCart();
     });
   }
 
@@ -24,6 +27,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final product = context.watch<ProductProvider>();
+    final cart = context.watch<CartProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -33,18 +37,47 @@ class _DashboardPageState extends State<DashboardPage> {
             const Text('Dashboard', style: TextStyle(fontSize: 18)),
             Text(
               'Halo, ${auth.firebaseUser?.displayName ?? 'User'}!',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.normal,
-              ),
+              style: const TextStyle(fontSize: 13),
             ),
           ],
         ),
         actions: [
+          /// CART BADGE
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRouter.cart);
+                },
+              ),
+              if (cart.totalItems > 0)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      cart.totalItems.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          /// LOGOUT
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await auth.logout();
+              await context.read<AuthProvider>().logout();
               if (!mounted) return;
               Navigator.pushReplacementNamed(context, AppRouter.login);
             },
@@ -53,29 +86,20 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
 
       body: switch (product.status) {
-        ProductStatus.loading || ProductStatus.initial => const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Memuat produk...'),
-            ],
-          ),
-        ),
+        ProductStatus.loading || ProductStatus.initial =>
+          const Center(child: CircularProgressIndicator()),
 
         ProductStatus.error => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
+              const Icon(Icons.error, size: 60, color: Colors.red),
+              const SizedBox(height: 10),
               Text(product.error ?? 'Terjadi kesalahan'),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
+              const SizedBox(height: 10),
+              ElevatedButton(
                 onPressed: () => product.fetchProducts(),
+                child: const Text('Retry'),
               ),
             ],
           ),
@@ -84,87 +108,106 @@ class _DashboardPageState extends State<DashboardPage> {
         ProductStatus.loaded => RefreshIndicator(
           onRefresh: () => product.fetchProducts(),
           child: GridView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              childAspectRatio: 0.62, // 🔥 FIX FINAL
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
             ),
             itemCount: product.products.length,
             itemBuilder: (context, i) {
               final p = product.products[i];
+
               return Card(
-                elevation: 2,
+                elevation: 3,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(12),
-                      ),
-                      child: Image.network(
-                        p.imageUrl,
-                        height: 120,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          height: 120,
-                          color: Colors.grey.shade200,
-                          child: const Icon(
-                            Icons.image_not_supported,
-                            size: 40,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Column(
+                      children: [
+
+                        /// IMAGE
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          child: Image.network(
+                            p.imageUrl,
+                            height: constraints.maxHeight * 0.4,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              height: constraints.maxHeight * 0.4,
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.image_not_supported),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            p.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+
+                        /// CONTENT + BUTTON
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+
+                                Text(
+                                  p.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 2),
+
+                                Text(
+                                  'Rp ${p.price.toStringAsFixed(0)}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF1565C0),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                  ),
+                                ),
+
+                                const Spacer(),
+
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      await cart.addToCart(p.id);
+
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              '${p.name} ditambahkan ke keranjang'),
+                                          duration: const Duration(seconds: 1),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 6),
+                                    ),
+                                    child: const Text(
+                                      'Tambah',
+                                      style: TextStyle(fontSize: 11),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Rp ${p.price.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              color: Color(0xFF1565C0),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              p.category,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF1565C0),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
               );
             },
