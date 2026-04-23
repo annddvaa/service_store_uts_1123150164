@@ -37,20 +37,20 @@ class DioClient {
         }
 
         
-        debugPrint(' [REQUEST] ${options.method} | ${options.uri}');
+        debugPrint('[REQUEST] ${options.method} | ${options.uri}');
         if (options.data != null) debugPrint(' [BODY] ${options.data}');
         
         return handler.next(options);
       },
       onResponse: (response, handler) {
         
-        debugPrint(' [RESPONSE] ${response.statusCode} | ${response.requestOptions.path}');
+        debugPrint('[RESPONSE] ${response.statusCode} | ${response.requestOptions.path}');
         return handler.next(response);
       },
       onError: (DioException e, handler) async {
         
-        debugPrint(' [ERROR] ${e.type} | Message: ${e.message}');
-        debugPrint(' [ERROR] URL: ${e.requestOptions.uri}');
+        debugPrint('[ERROR] ${e.type} | Message: ${e.message}');
+        debugPrint('[ERROR] URL: ${e.requestOptions.uri}');
 
         if (e.response?.statusCode == 401) {
           debugPrint(' [401] Sesi habis atau token tidak valid. Membersihkan storage...');
