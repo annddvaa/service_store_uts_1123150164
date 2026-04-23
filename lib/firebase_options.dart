@@ -61,7 +61,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA45TlouZf1jo74U7eh-PFasRvVtPbNGk8',
-    appId: '1:246014624491:android:c674e3626638c64cd4b4ae',
+    appId: '1:246014624491:android:ab2069ef2b7103e6d4b4ae',
     messagingSenderId: '246014624491',
     projectId: 'gin-firebase-backend-12925',
     storageBucket: 'gin-firebase-backend-12925.firebasestorage.app',

@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:246014624491:android:c674e3626638c64cd4b4ae",
+        "mobilesdk_app_id": "1:246014624491:android:ab2069ef2b7103e6d4b4ae",
         "android_client_info": {
-          "package_name": "com.example.service_store"
+          "package_name": "com.dava.service_store"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "246014624491-ha4upq6fse1pe91l4n0lebc9agv9fmgk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA45TlouZf1jo74U7eh-PFasRvVtPbNGk8"
@@ -20,7 +25,49 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "246014624491-ha4upq6fse1pe91l4n0lebc9agv9fmgk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246014624491:android:028fa43ee3b26828d4b4ae",
+        "android_client_info": {
+          "package_name": "service.store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "246014624491-keua4ho0a3df0p7b4s54vchd7la578ul.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "service.store",
+            "certificate_hash": "6932c39ab6c17f7c84117da4a8d8b2520d856955"
+          }
+        },
+        {
+          "client_id": "246014624491-ha4upq6fse1pe91l4n0lebc9agv9fmgk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA45TlouZf1jo74U7eh-PFasRvVtPbNGk8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "246014624491-ha4upq6fse1pe91l4n0lebc9agv9fmgk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

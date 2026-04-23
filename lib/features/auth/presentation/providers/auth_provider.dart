@@ -91,25 +91,44 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> _verifyTokenToBackend() async {
-    // Ambil Firebase ID Token (expired tiap 1 jam)
-    final firebaseToken = await _firebaseUser?.getIdToken();
+    _setLoading();
+    try {
+      final firebaseToken = await _firebaseUser?.getIdToken();
+      if (firebaseToken == null) throw Exception("Firebase token is null");
 
-    // POST ke backend — DioClient interceptor sudah handle logging
-    final response = await DioClient.instance.post(
-      ApiConstants.verifyToken,
-      data: {'firebase_token': firebaseToken},
-    );
+      debugPrint('📡 Mengirim Firebase Token ke Backend...');
 
-    // Backend return JWT milik sistem kita
-    final data = response.data['data'] as Map<String, dynamic>;
-    final backendToken = data['access_token'] as String;
+      final response = await DioClient.instance.post(
+        ApiConstants.verifyToken,
+        data: {'firebase_token': firebaseToken},
+      );
 
-    // Simpan aman di device (encrypted)
-    await SecureStorageService.saveToken(backendToken);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Sesuaikan dengan struktur JSON backend Anda
+        final responseBody = response.data;
+        if (responseBody['success'] == true) {
+          final data = responseBody['data'] as Map<String, dynamic>;
+          final backendToken = data['access_token'] as String;
 
-    _status = AuthStatus.authenticated;
-    notifyListeners();
-    return true;
+          await SecureStorageService.saveToken(backendToken);
+          
+          _status = AuthStatus.authenticated;
+          _backendToken = backendToken;
+          notifyListeners();
+          return true;
+        } else {
+          _setError(responseBody['message'] ?? 'Verifikasi gagal');
+          return false;
+        }
+      } else {
+        _setError('Server Error: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('🚨 Catch Error: $e');
+      _setError('Koneksi Gagal: Pastikan Laptop & HP di Wi-Fi yang sama');
+      return false;
+    }
   }
 
   // ─── Login dengan Email & Password ───────────────────────

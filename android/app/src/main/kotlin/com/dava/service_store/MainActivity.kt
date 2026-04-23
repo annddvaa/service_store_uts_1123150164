@@ -1,4 +1,4 @@
-package com.example.service_store
+package com.dava.service_store
 
 import io.flutter.embedding.android.FlutterActivity
 
