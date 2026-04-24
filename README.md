@@ -67,6 +67,11 @@ Berikut adalah alur penggunaan aplikasi DavPhone Service dari awal hingga proses
 | Checkout Berhasil |
 |:---:|
 | <img src="assets/icons/pop-up pembayaran.jpeg" width="250"> |
+
+
+| Database |
+|:---:|
+| <img src="assets/icons/database.jpeg" width="250"> |
 ---
 A new Flutter project.
 
