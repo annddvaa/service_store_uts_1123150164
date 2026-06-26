@@ -5,8 +5,10 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-import '../../features/dashboard/presentation/pages/splash_page.dart';
 import '../../features/cart/presentation/pages/cart.dart';
+import '../../features/orders/presentation/pages/orders_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../main.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -15,6 +17,8 @@ class AppRouter {
   static const String verifyEmail = '/verify-email';
   static const String dashboard = '/dashboard';
   static const String cart = '/cart';
+  static const String orders = '/orders';
+  static const String profile = '/profile';
 
   static Map<String, WidgetBuilder> get routes => {
     splash: (_) => const SplashPage(),
@@ -23,6 +27,8 @@ class AppRouter {
     verifyEmail: (_) => const VerifyEmailPage(),
     dashboard: (_) => const AuthGuard(child: DashboardPage()),
     cart: (_) => const Cart(),
+    orders: (_) => const OrdersPage(),
+    profile: (_) => const ProfilePage(),
   };
 }
 
@@ -35,10 +41,9 @@ class AuthGuard extends StatelessWidget {
     final status = context.watch<AuthProvider>().status;
 
     return switch (status) {
-      AuthStatus.authenticated => child, // Lanjut ke halaman
-      AuthStatus.emailNotVerified =>
-        const VerifyEmailPage(), // Redirect verifikasi
-      _ => const LoginPage(), // Redirect login
+      AuthStatus.authenticated => child,
+      AuthStatus.emailNotVerified => const VerifyEmailPage(),
+      _ => const LoginPage(),
     };
   }
 }

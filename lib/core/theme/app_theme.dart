@@ -2,105 +2,215 @@ import 'package:flutter/material.dart';
 import '../constants/app_color.dart';
 
 class AppTheme {
-  //Light Mode
+  // ─── Light Theme ───────────────────────────────────────────
   static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
+      brightness: Brightness.light,
+      fontFamily: 'Roboto',
+      colorScheme: ColorScheme.light(
         primary: AppColors.primary,
+        secondary: AppColors.accent,
         surface: AppColors.surface,
-        background: AppColors.background,
         error: AppColors.error,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: AppColors.textPrimary,
       ),
-
       scaffoldBackgroundColor: AppColors.background,
+
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.3,
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.accent,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.accent,
+          textStyle: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.grey.shade50, // Abu sangat muda
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        fillColor: AppColors.surfaceVariant,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.accent, width: 2),
         ),
-        hintStyle: TextStyle(color: Colors.grey.shade600),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        hintStyle: const TextStyle(color: AppColors.textHint),
+        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        prefixIconColor: AppColors.textSecondary,
+      ),
+
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppColors.border.withValues(alpha: 0.5)),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.surfaceVariant,
+        selectedColor: AppColors.primary,
+        labelStyle: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        side: BorderSide(color: AppColors.border),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      ),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.surface,
+        selectedItemColor: AppColors.accent,
+        unselectedItemColor: AppColors.textHint,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+        unselectedLabelStyle: TextStyle(fontSize: 11),
+      ),
+
+      dividerTheme: const DividerThemeData(
+        color: AppColors.divider,
+        thickness: 1,
       ),
 
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primary; // Saat ON
-          }
-          return Colors.grey.shade400; // Saat OFF
-        }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primary.withValues(
-              alpha: 0.4,
-            ); // Rel biru transparan
-          }
-          return Colors.grey.shade300; // Rel abu
-        }),
+        thumbColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected) ? AppColors.accent : Colors.grey.shade400),
+        trackColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? AppColors.accent.withOpacity(0.4)
+                : Colors.grey.shade300),
+      ),
+
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        displayMedium: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        headlineMedium: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        headlineSmall: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        titleLarge: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        titleMedium: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+        bodyLarge: TextStyle(color: AppColors.textPrimary),
+        bodyMedium: TextStyle(color: AppColors.textSecondary),
+        bodySmall: TextStyle(color: AppColors.textHint),
+        labelLarge: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        labelMedium: TextStyle(color: AppColors.textSecondary),
+        labelSmall: TextStyle(color: AppColors.textHint, fontSize: 10),
       ),
     );
   }
 
-  //Dart Mode
+  // ─── Dark Theme ────────────────────────────────────────────
   static ThemeData get dark {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark, // Memberitahu Flutter ini tema gelap
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary, // Warna dasar tetap sama
-        brightness:
-            Brightness.dark, // WAJIB: Agar seed menghasilkan palette gelap
-        primary: AppColors.accent, // Override warna utama jika ingin lebih muda
-        surface: AppColors.darkSurface, // Pengganti background
+      brightness: Brightness.dark,
+      fontFamily: 'Roboto',
+      colorScheme: ColorScheme.dark(
+        primary: AppColors.accent,
+        secondary: AppColors.accentLight,
+        surface: AppColors.darkSurface,
+        error: AppColors.error,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: AppColors.darkTextPrimary,
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
-      appBarTheme: AppBarTheme(
+
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkSurface,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.darkTextPrimary,
         elevation: 0,
         centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: AppColors.darkTextPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.3,
+        ),
+        iconTheme: IconThemeData(color: AppColors.darkTextPrimary),
       ),
-      // Tambahkan ini agar text field di dark mode juga terlihat bagus
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accent,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.accentLight,
+          side: const BorderSide(color: AppColors.accent, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.accentLight,
+          textStyle: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.darkSurfaceCard, // Abu gelap sesuai permintaan
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        fillColor: AppColors.darkSurfaceVariant,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.darkBorder),
@@ -111,46 +221,75 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.accent,
-            width: 2,
-          ), // Biru terang accent
+          borderSide: const BorderSide(color: AppColors.accent, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
         hintStyle: const TextStyle(color: AppColors.darkTextHint),
+        labelStyle: const TextStyle(color: AppColors.darkTextSecondary),
+        prefixIconColor: AppColors.darkTextSecondary,
+      ),
+
+      cardTheme: const CardThemeData(
+        color: AppColors.darkSurfaceCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+          side: BorderSide(color: AppColors.darkBorder),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+
+      chipTheme: const ChipThemeData(
+        backgroundColor: AppColors.darkSurfaceVariant,
+        selectedColor: AppColors.accent,
+        labelStyle: TextStyle(fontSize: 12, color: AppColors.darkTextSecondary),
+        side: BorderSide(color: AppColors.darkBorder),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      ),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.darkSurface,
+        selectedItemColor: AppColors.accent,
+        unselectedItemColor: AppColors.darkTextHint,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+        unselectedLabelStyle: TextStyle(fontSize: 11),
+      ),
+
+      dividerTheme: const DividerThemeData(
+        color: AppColors.darkDivider,
+        thickness: 1,
       ),
 
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.accent; // Saat ON (biru muda/accent)
-          }
-          return Colors.grey.shade600; // Saat OFF (lebih gelap dari light mode)
-        }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.accent.withValues(
-              alpha: 0.4,
-            ); // Rel accent transparan
-          }
-          return Colors.black26; // Rel hitam transparan saat OFF
-        }),
+        thumbColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected) ? AppColors.accent : Colors.grey.shade600),
+        trackColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? AppColors.accent.withOpacity(0.4)
+                : Colors.black26),
       ),
-      textTheme: const TextTheme(
-        // Warna putih utama (Primary)
-        titleLarge: TextStyle(
-          color: AppColors.darkTextPrimary,
-          fontWeight: FontWeight.bold,
-        ),
-        titleMedium: TextStyle(
-          color: AppColors.darkTextPrimary,
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: TextStyle(color: AppColors.darkTextPrimary),
-        bodyMedium: TextStyle(color: AppColors.darkTextPrimary),
 
-        // Warna putih keabuan/pudar (Secondary) untuk keterangan tambahan
-        bodySmall: TextStyle(color: AppColors.darkTextSecondary),
-        labelSmall: TextStyle(color: AppColors.darkTextSecondary),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        displayMedium: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        headlineMedium: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        headlineSmall: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        titleLarge: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        titleMedium: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(color: AppColors.darkTextSecondary, fontWeight: FontWeight.w500),
+        bodyLarge: TextStyle(color: AppColors.darkTextPrimary),
+        bodyMedium: TextStyle(color: AppColors.darkTextSecondary),
+        bodySmall: TextStyle(color: AppColors.darkTextHint),
+        labelLarge: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        labelMedium: TextStyle(color: AppColors.darkTextSecondary),
+        labelSmall: TextStyle(color: AppColors.darkTextHint, fontSize: 10),
       ),
     );
   }

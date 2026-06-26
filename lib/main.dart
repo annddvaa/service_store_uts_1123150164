@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'core/constants/app_color.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/routes/app_router.dart';
 import 'core/services/secure_storage.dart';
@@ -17,7 +18,6 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
-    // Pindahkan SEMUA provider ke sini agar bisa diakses secara global
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
@@ -35,15 +35,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // MultiProvider di sini dihapus karena sudah ada di void main()
+    final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
       title: 'DavPhone Service',
       debugShowCheckedModeBanner: false,
-      // Konfigurasi Tema
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system, // Otomatis ikuti settingan HP
-      // Konfigurasi Rute
+      themeMode: themeProvider.themeMode,
       initialRoute: AppRouter.splash,
       routes: AppRouter.routes,
     );
@@ -56,22 +54,34 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnim;
+  late Animation<double> _scaleAnim;
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _scaleAnim = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+    _controller.forward();
     _checkAuth();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _checkAuth() async {
-    // Memberikan waktu splash screen tampil
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
-    // Cek keberadaan token di Secure Storage
     final token = await SecureStorageService.getToken();
-
-    // Tentukan rute tujuan berdasarkan status login
     final route = token != null ? AppRouter.dashboard : AppRouter.login;
 
     if (mounted) {
@@ -81,19 +91,64 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Tampilan Splash Screen
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 20),
-            Text(
-              'DavPhone Service',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+        child: SafeArea(
+          child: Center(
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: ScaleTransition(
+                scale: _scaleAnim,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accent.withOpacity(0.3),
+                            blurRadius: 30,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.phone_android, color: Colors.white, size: 64),
+                    ),
+                    const SizedBox(height: 28),
+                    const Text(
+                      'DavPhone Service',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Solusi Service HP Terpercaya',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 15),
+                    ),
+                    const SizedBox(height: 60),
+                    const SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(
+                        color: AppColors.accent,
+                        strokeWidth: 3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
