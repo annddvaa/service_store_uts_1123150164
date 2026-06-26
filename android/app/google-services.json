@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "246014624491-35iv712mbqcq3acie0vd9ok4nkmke1tn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dava.service_store",
+            "certificate_hash": "6932c39ab6c17f7c84117da4a8d8b2520d856955"
+          }
+        },
+        {
           "client_id": "246014624491-ha4upq6fse1pe91l4n0lebc9agv9fmgk.apps.googleusercontent.com",
           "client_type": 3
         }

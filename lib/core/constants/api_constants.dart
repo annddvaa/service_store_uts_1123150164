@@ -1,9 +1,9 @@
 class ApiConstants {
-  static const String baseUrl = 'http://192.168.8.130:8080/v1';
- 
+  static const String baseUrl = 'http://192.168.43.61:8080/v1';
+
   // Auth endpoints
   static const String verifyToken = '/auth/verify-token';
- 
+
   // Product endpoints
   static const String products = '/products';
 
@@ -11,6 +11,6 @@ class ApiConstants {
   static const String cart = '/cart';
 
   // Timeout
-  static const int connectTimeout = 15000;
-  static const int receiveTimeout = 15000;
+  static const int connectTimeout = 30000;
+  static const int receiveTimeout = 30000;
 }
