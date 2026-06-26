@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
@@ -48,6 +49,13 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, theme, _) => IconButton(
+              icon: Icon(theme.isDark ? Icons.light_mode : Icons.dark_mode),
+              onPressed: () => theme.toggle(),
+              tooltip: 'Ganti Tema',
+            ),
+          ),
           _buildCartBadge(cart),
           IconButton(
             icon: const Icon(Icons.power_settings_new),
@@ -91,7 +99,6 @@ class _DashboardPageState extends State<DashboardPage> {
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  // 🔥 UBAH KE 0.58 agar kartu lebih panjang ke bawah dan tidak overflow
                   childAspectRatio: 0.58,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
@@ -237,7 +244,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ],
                   ),
-                  const Spacer(), 
+                  const Spacer(),
                   Text(
                     'Rp ${p.price.toStringAsFixed(0)}',
                     style: const TextStyle(
