@@ -353,20 +353,24 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                   children: [
                     // Logo
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.accent.withOpacity(0.3),
-                            blurRadius: 30,
-                            spreadRadius: 5,
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.phone_android, color: Colors.white, size: 64),
+                      child: Image.asset(
+                        'assets/logo/logodavphone.png',
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     const SizedBox(height: 28),
                     const Text(
