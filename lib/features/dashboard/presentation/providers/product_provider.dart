@@ -21,7 +21,7 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await DioClient.instance.get(ApiConstants.products);
+      final response = await DioClient.instance.get('${ApiConstants.products}?limit=100');
 
       final data = response.data['data'] as List? ?? [];
       _products = data.map((e) => ProductModel.fromJson(e)).toList();
