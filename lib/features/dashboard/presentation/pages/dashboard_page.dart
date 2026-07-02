@@ -19,9 +19,10 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _currentIndex = 0;
   String _selectedCategory = 'Semua';
+  String _searchQuery = '';
 
   final List<String> _categories = [
-    'Semua', 'Layar', 'Baterai', 'Software', 'Kamera', 'Charging', 'Lainnya',
+    'Semua', 'Layar LCD', 'Baterai', 'Software', 'Kamera', 'Charging', 'Komponen HP Lainnya',
   ];
 
   @override
@@ -35,6 +36,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _onNavTap(int index) {
     if (index == _currentIndex) return;
+    FocusScope.of(context).unfocus();
     switch (index) {
       case 0: setState(() => _currentIndex = 0); break;
       case 1: Navigator.pushNamed(context, AppRouter.cart); break;
@@ -138,7 +140,7 @@ class _DashboardPageState extends State<DashboardPage> {
       slivers: [
         // ─── SliverAppBar ───────────────────────────────
         SliverAppBar(
-          expandedHeight: 180,
+          expandedHeight: 120,
           pinned: true,
           floating: false,
           backgroundColor: AppColors.primary,
@@ -187,6 +189,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
               child: TextField(
+                onTapOutside: (event) => FocusScope.of(context).unfocus(),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
                 decoration: InputDecoration(
                   hintText: 'Cari layanan servis...',
                   prefixIcon: const Icon(Icons.search, color: AppColors.accent),
@@ -196,7 +204,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   fillColor: Colors.transparent,
                   contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 ),
-                readOnly: true,
               ),
             ),
           ),
@@ -293,20 +300,44 @@ class _DashboardPageState extends State<DashboardPage> {
           ProductStatus.error =>
             SliverFillRemaining(child: _buildErrorState(product)),
           ProductStatus.loaded =>
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.62,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) => _buildServiceCard(product.products[i], cart),
-                  childCount: product.products.length,
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                var filteredProducts = _selectedCategory == 'Semua' 
+                  ? product.products 
+                  : product.products.where((p) => p.category == _selectedCategory).toList();
+                  
+                if (_searchQuery.trim().isNotEmpty) {
+                  final query = _searchQuery.trim().toLowerCase();
+                  filteredProducts = filteredProducts.where((p) => 
+                    p.name.toLowerCase().contains(query) || 
+                    p.category.toLowerCase().contains(query)
+                  ).toList();
+                }
+                  
+                if (filteredProducts.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(
+                      child: Text('Layanan tidak ditemukan', style: TextStyle(color: Colors.grey)),
+                    ),
+                  );
+                }
+                  
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.62,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, i) => _buildServiceCard(filteredProducts[i], cart),
+                      childCount: filteredProducts.length,
+                    ),
+                  ),
+                );
+              },
             ),
         },
 
@@ -318,7 +349,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildHeroBanner(AuthProvider auth) {
     return Container(
       decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-      padding: const EdgeInsets.fromLTRB(20, 80, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 60, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.end,
@@ -375,10 +406,13 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildServiceCard(ProductModel p, CartProvider cart) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ProductDetailPage(product: p)),
-      ),
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => ProductDetailPage(product: p)),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardTheme.color,
@@ -401,17 +435,19 @@ class _DashboardPageState extends State<DashboardPage> {
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: Image.network(
-                      p.imageUrl,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.primary.withOpacity(0.1),
-                        child: const Center(
-                          child: Icon(Icons.build_circle, color: AppColors.primary, size: 40),
-                        ),
-                      ),
-                    ),
+                    child: p.imageUrl.startsWith('http')
+                        ? Image.network(
+                            p.imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildImageFallback(),
+                          )
+                        : Image.asset(
+                            p.imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildImageFallback(),
+                          ),
                   ),
                   Positioned(
                     top: 8, left: 8,
@@ -525,6 +561,15 @@ class _DashboardPageState extends State<DashboardPage> {
             label: const Text('Coba Lagi'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildImageFallback() {
+    return Container(
+      color: AppColors.primary.withOpacity(0.1),
+      child: const Center(
+        child: Icon(Icons.build_circle, color: AppColors.primary, size: 40),
       ),
     );
   }
