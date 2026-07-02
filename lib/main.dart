@@ -4,12 +4,18 @@ import 'package:provider/provider.dart';
 import 'core/constants/app_color.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/routes/app_router.dart';
+import 'core/services/deeplink_handler.dart';
 import 'core/services/secure_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
 import 'features/dashboard/presentation/providers/product_provider.dart';
+import 'features/orders/presentation/providers/order_provider.dart';
 import 'firebase_options.dart';
+
+/// Global navigator key — digunakan oleh DeeplinkHandler untuk menampilkan
+/// SnackBar dan navigasi saat callback pembayaran diterima.
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,19 +30,147 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
       ],
       child: const MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final DeeplinkHandler _deeplinkHandler;
+  bool _isPaymentSheetOpen = false;
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    // Tutup bottom sheet secara otomatis jika user melakukan hot reload
+    if (_isPaymentSheetOpen) {
+      navigatorKey.currentState?.pop();
+      _isPaymentSheetOpen = false;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _deeplinkHandler = DeeplinkHandler(
+      onPaymentResult: _handlePaymentResult,
+    );
+    _deeplinkHandler.init();
+  }
+
+  @override
+  void dispose() {
+    _deeplinkHandler.dispose();
+    super.dispose();
+  }
+
+  void _handlePaymentResult(PaymentResult result) {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null) return;
+
+    if (result.isSuccess) {
+      _isPaymentSheetOpen = true;
+      // Tampilkan bottom sheet sukses pembayaran
+      showModalBottomSheet(
+        context: ctx,
+        isDismissible: false,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (_) => Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle, color: AppColors.success, size: 64),
+              ),
+              const SizedBox(height: 16),
+              const Text('Pembayaran Berhasil! 🎉',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(
+                'Pembayaran via Service Pay berhasil.\n'
+                'Ref: ${result.transactionId ?? '-'}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.timer_outlined, color: AppColors.warning, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Estimasi pengerjaan: 30 menit - 2 jam\ntergantung jenis kerusakan.',
+                        style: TextStyle(fontSize: 12, color: AppColors.warning),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    DeeplinkHandler.isHandlingPayment = false;
+                    Navigator.pushNamedAndRemoveUntil(ctx, '/dashboard', (r) => false);
+                  },
+                  icon: const Icon(Icons.home_outlined),
+                  label: const Text('KEMBALI KE BERANDA'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ).then((_) {
+        _isPaymentSheetOpen = false;
+        DeeplinkHandler.isHandlingPayment = false;
+      });
+    } else if (result.isFailed) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Pembayaran gagal: ${result.error ?? 'Terjadi kesalahan'}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else if (result.isCancelled) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text('Pembayaran dibatalkan'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'DavPhone Service',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
@@ -58,6 +192,17 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
+  bool _isPaymentSheetOpen = false;
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    // Tutup bottom sheet secara otomatis jika user melakukan hot reload
+    if (_isPaymentSheetOpen) {
+      navigatorKey.currentState?.pop();
+      _isPaymentSheetOpen = false;
+    }
+  }
 
   @override
   void initState() {
@@ -81,11 +226,114 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
-    final token = await SecureStorageService.getToken();
-    final route = token != null ? AppRouter.dashboard : AppRouter.login;
+    // Cek apakah ada pending payment result dari deeplink callback (cold-start)
+    final pendingPayment = DeeplinkHandler.consumePending();
 
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, route);
+    final token = await SecureStorageService.getToken();
+
+    if (token != null && mounted) {
+      context.read<AuthProvider>().restoreSession(token);
+    }
+
+    if (pendingPayment != null) {
+      debugPrint('[Splash] Pending payment ditemukan: ${pendingPayment.status}');
+      if (mounted) {
+        if (token != null) {
+          _showPaymentResult(pendingPayment, () {
+            DeeplinkHandler.isHandlingPayment = false;
+            if (mounted) Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+          });
+        } else {
+          _showPaymentResult(pendingPayment, () {
+            DeeplinkHandler.isHandlingPayment = false;
+            if (mounted) Navigator.pushReplacementNamed(context, AppRouter.login);
+          });
+        }
+      }
+    } else {
+      // Tunggu jika ada proses deeplink stream yang sedang menampilkan pop-up
+      while (DeeplinkHandler.isHandlingPayment && mounted) {
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+      
+      final route = token != null ? AppRouter.dashboard : AppRouter.login;
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, route);
+      }
+    }
+  }
+
+  void _showPaymentResult(PaymentResult result, VoidCallback onDone) {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null) {
+      onDone();
+      return;
+    }
+
+    if (result.isSuccess) {
+      _isPaymentSheetOpen = true;
+      showModalBottomSheet(
+        context: ctx,
+        isDismissible: false,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (_) => Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle, color: AppColors.success, size: 64),
+              ),
+              const SizedBox(height: 16),
+              const Text('Pembayaran Berhasil! 🎉',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(
+                'Pembayaran via Service Pay berhasil.\n'
+                'Ref: ${result.transactionId ?? '-'}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(ctx),
+                  icon: const Icon(Icons.check_outlined),
+                  label: const Text('OK'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ).then((_) {
+        _isPaymentSheetOpen = false;
+        onDone();
+      });
+    } else if (result.isFailed) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Pembayaran gagal: ${result.error ?? 'Terjadi kesalahan'}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      onDone();
+    } else if (result.isCancelled) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text('Pembayaran dibatalkan'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      onDone();
     }
   }
 
