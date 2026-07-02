@@ -43,6 +43,17 @@ class DeeplinkHandler {
   Future<void> _updateBackendStatus(PaymentResult result) async {
     if (result.isSuccess) {
       try {
+        final ref = result.reference;
+        if (ref != null && ref.startsWith('ORDER_')) {
+          final orderIdStr = ref.replaceFirst('ORDER_', '');
+          final orderId = int.tryParse(orderIdStr);
+          if (orderId != null) {
+            await dio.DioClient.instance.post('/orders/$orderId/complete');
+            debugPrint('[DeeplinkHandler] Berhasil update status pesanan $orderId menjadi selesai.');
+            return;
+          }
+        }
+        // Fallback untuk transaksi tanpa reference yang jelas
         await dio.DioClient.instance.post('/orders/complete-latest');
         debugPrint('[DeeplinkHandler] Berhasil update status pesanan terbaru menjadi selesai.');
       } catch (e) {
@@ -63,9 +74,10 @@ class DeeplinkHandler {
         final lastRef = prefs.getString('last_ref_id');
         
         final isDuplicateTxn = result.transactionId != null && result.transactionId == lastTxn;
-        final isDuplicateRef = result.reference != null && result.reference == lastRef;
 
-        if (isDuplicateTxn || isDuplicateRef) {
+        // Jangan gunakan isDuplicateRef karena user bisa melakukan "Bayar Lagi" 
+        // pada pesanan yang sama (referensi sama) jika sebelumnya gagal.
+        if (isDuplicateTxn) {
           debugPrint('[DeeplinkHandler] Mengabaikan initial URI karena transaksi sudah diproses.');
         } else {
           _pendingResult = result;
@@ -95,9 +107,9 @@ class DeeplinkHandler {
           final lastRef = prefs.getString('last_ref_id');
           
           final isDuplicateTxn = result.transactionId != null && result.transactionId == lastTxn;
-          final isDuplicateRef = result.reference != null && result.reference == lastRef;
 
-          if (isDuplicateTxn || isDuplicateRef) {
+          // Jangan gunakan isDuplicateRef agar "Bayar Lagi" bisa diproses
+          if (isDuplicateTxn) {
             debugPrint('[DeeplinkHandler] Mengabaikan stream URI karena transaksi sudah diproses.');
             return;
           }
