@@ -4,6 +4,7 @@ import '../../../../core/constants/app_color.dart';
 import '../providers/order_provider.dart';
 import '../../data/models/order_model.dart';
 import 'package:intl/intl.dart';
+import '../../../checkout/pages/checkout.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -267,6 +268,25 @@ class _OrdersPageState extends State<OrdersPage> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           textStyle: const TextStyle(fontSize: 12),
+                        ),
+                      )
+                    else if (order.status == 'menunggu' || order.status == 'pending')
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CheckoutPage(pendingOrder: order),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.payment, size: 16),
+                        label: const Text('Bayar Lagi'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                   ],
