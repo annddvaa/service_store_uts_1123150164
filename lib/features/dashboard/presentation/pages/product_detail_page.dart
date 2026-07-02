@@ -3,10 +3,20 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_color.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../data/models/product_model.dart';
+import '../../../checkout/pages/checkout.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final ProductModel product;
   const ProductDetailPage({super.key, required this.product});
+
+  Widget _buildFallbackImage() {
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+      child: const Center(
+        child: Icon(Icons.build_circle, color: Colors.white, size: 80),
+      ),
+    );
+  }
 
   String _formatPrice(double price) {
     final str = price.toStringAsFixed(0);
@@ -35,16 +45,17 @@ class ProductDetailPage extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    product.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-                      child: const Center(
-                        child: Icon(Icons.build_circle, color: Colors.white, size: 80),
-                      ),
-                    ),
-                  ),
+                  product.imageUrl.startsWith('http')
+                      ? Image.network(
+                          product.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildFallbackImage(),
+                        )
+                      : Image.asset(
+                          product.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildFallbackImage(),
+                        ),
                   // Overlay gradient
                   Container(
                     decoration: BoxDecoration(
@@ -248,38 +259,39 @@ class ProductDetailPage extends StatelessWidget {
         child: SafeArea(
           child: Row(
             children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await cart.addToCart(product.id);
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${product.name} ditambahkan ke keranjang'),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: AppColors.success,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                  label: const Text('Keranjang'),
+              OutlinedButton(
+                onPressed: () async {
+                  await cart.addToCart(product.id);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${product.name} ditambahkan ke keranjang'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: AppColors.success,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  side: const BorderSide(color: AppColors.primary, width: 1),
                 ),
+                child: const Icon(Icons.add_shopping_cart, size: 24, color: AppColors.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
-                flex: 2,
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     await cart.addToCart(product.id);
                     if (!context.mounted) return;
-                    Navigator.pop(context);
-                    // langsung ke cart
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutPage()));
                   },
-                  icon: const Icon(Icons.bolt, size: 18),
-                  label: const Text('Pesan Sekarang'),
+                  icon: const Icon(Icons.bolt, size: 20),
+                  label: const Text('Pesan Sekarang', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
