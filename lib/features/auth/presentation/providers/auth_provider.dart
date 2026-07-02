@@ -37,6 +37,14 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isLoading => _status == AuthStatus.loading;
 
+  // ─── Restore Session (Cold Start) ──────────────────────────
+  void restoreSession(String backendToken) {
+    _status = AuthStatus.authenticated;
+    _backendToken = backendToken;
+    _firebaseUser = _auth.currentUser;
+    notifyListeners();
+  }
+
   // ─── Register dengan Email & Password ────────────────────
   Future<bool> register({
     required String name,
