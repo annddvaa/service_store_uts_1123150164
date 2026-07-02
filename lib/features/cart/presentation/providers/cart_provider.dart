@@ -83,20 +83,25 @@ class CartProvider extends ChangeNotifier {
   }
 
   /// CHECKOUT 
-  Future<bool> checkout() async {
+  Future<int?> checkout() async {
     try {
       final res = await DioClient.instance.post('/cart/checkout');
 
       if (res.data['success'] == true) {
         _items = [];
         notifyListeners();
-        return true;
+        
+        final data = res.data['data'];
+        if (data != null && data['ID'] != null) {
+          return data['ID'] as int;
+        }
+        return -1; // Fallback jika ID tidak ada
       }
 
-      return false;
+      return null;
     } catch (e) {
       debugPrint(" checkout error: $e");
-      return false;
+      return null;
     }
   }
 }
