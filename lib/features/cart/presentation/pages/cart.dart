@@ -8,6 +8,18 @@ import '../providers/cart_provider.dart';
 class Cart extends StatelessWidget {
   const Cart({super.key});
 
+  Widget _buildFallbackImage() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(Icons.build_circle, color: Colors.white, size: 36),
+    );
+  }
+
   String _formatPrice(double price) {
     final str = price.toStringAsFixed(0);
     final buffer = StringBuffer();
@@ -61,9 +73,11 @@ class Cart extends StatelessWidget {
                     children: [
                       const Icon(Icons.verified_outlined, color: AppColors.success, size: 16),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Semua layanan menggunakan part original + garansi 7 hari',
-                        style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w500),
+                      const Expanded(
+                        child: Text(
+                          'Semua layanan menggunakan part original + garansi 7 hari',
+                          style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w500),
+                        ),
                       ),
                     ],
                   ),
@@ -137,21 +151,21 @@ class Cart extends StatelessWidget {
             // Thumbnail
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                item.imageUrl,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.build_circle, color: Colors.white, size: 36),
-                ),
-              ),
+              child: item.imageUrl.startsWith('http')
+                  ? Image.network(
+                      item.imageUrl,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildFallbackImage(),
+                    )
+                  : Image.asset(
+                      item.imageUrl,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildFallbackImage(),
+                    ),
             ),
             const SizedBox(width: 14),
 
