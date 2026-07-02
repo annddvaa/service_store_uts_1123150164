@@ -356,10 +356,25 @@ class _DashboardPageState extends State<DashboardPage> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: AppColors.accent.withOpacity(0.25),
-                child: const Icon(Icons.person, color: Colors.white, size: 22),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  'assets/logo/logodavphone.png',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(width: 12),
               Column(
