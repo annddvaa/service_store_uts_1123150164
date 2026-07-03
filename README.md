@@ -6,7 +6,7 @@
 
 ## 📱 Demo Aplikasi
 
-> 🎥 **Video Demo YouTube:** [On Progress]
+> 🎥 **Video Demo YouTube:** [(https://youtu.be/yuPxm6fAr_Q?si=xbmKqWgrY-QNwlLo)]
 
 > **Nama : Dava Ananda Wahyudi**
 > 
